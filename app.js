@@ -21,14 +21,14 @@ app.use(express.static(path.join(__dirname, 'build')));
 // временное решение авторизации
 app.use((req, res, next) => {
   req.user = {
-    _id: '64c7b9b08e4b58d6f9e23954'
+    _id: '64c7b9b08e4b58d6f9e23954',
   };
 
   next();
 });
 
 // обработка ошибок
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const ERROR_CODE = 400;
 
   if (err.name === 'ValidationError') {
@@ -39,7 +39,7 @@ app.use((err, req, res, next) => {
     return res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
   }
 
-  res.status(500).send({ message: 'Ошибка сервера' });
+  return res.status(500).send({ message: 'Ошибка сервера' });
 });
 
 app.listen(PORT, () => {
