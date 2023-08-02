@@ -43,7 +43,7 @@ const createUser = (req, res) => {
     });
 };
 // обновить профиль
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
@@ -53,9 +53,7 @@ const updateProfile = (req, res) => {
         res.status(200).send(user);
       }
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при обновлении профиля' });
-    });
+    .catch(next);
 };
 // обновить аватар
 const updateAvatar = (req, res) => {
