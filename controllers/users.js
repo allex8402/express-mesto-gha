@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 // возвращение всех пользователей
@@ -14,17 +15,20 @@ const getUsers = (req, res) => {
 // возвращение пользователей по _id
 const getUserById = (req, res) => {
   const { userId } = req.params;
+
+  // Проверяем, является ли userId корректным ObjectId
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).send({ message: 'Некорректный идентификатор пользователя' });
+  }
+
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-      } else {
-        res.status(200).send(user);
+        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
+      return res.status(200).send(user);
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при получении пользователя' });
-    });
+    .catch(() => res.status(500).send({ message: 'Ошибка при получении пользователя' }));
 };
 
 // создание пользователя
