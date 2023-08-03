@@ -15,11 +15,7 @@ const getUsers = (req, res) => {
 // возвращение пользователей по _id
 const getUserById = (req, res) => {
   const { userId } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).send({ message: 'Некорректный формат идентификатора пользователя' });
-  }
-
-  User.findById(userId)
+  User.findById(new mongoose.Types.ObjectId(userId))
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
@@ -42,7 +38,7 @@ const createUser = (req, res) => {
       res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
     });
 };
-// обновить профиль
+
 // обновить профиль
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
