@@ -15,7 +15,11 @@ const getUsers = (req, res) => {
 // возвращение пользователей по _id
 const getUserById = (req, res) => {
   const { userId } = req.params;
-  User.findById(new mongoose.Types.ObjectId(userId))
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).send({ message: 'Некорректный формат идентификатора пользователя' });
+  }
+
+  User.findById(userId)
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
