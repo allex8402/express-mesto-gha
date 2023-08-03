@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const User = require('../models/user');
 
 // возвращение всех пользователей
@@ -13,14 +13,8 @@ const getUsers = (req, res) => {
 };
 
 // возвращение пользователей по _id
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
-
-  // Проверяем, является ли userId корректным ObjectId
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).send({ message: 'Некорректный идентификатор пользователя' });
-  }
-
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -28,7 +22,7 @@ const getUserById = (req, res) => {
       }
       return res.status(200).send(user);
     })
-    .catch(() => res.status(500).send({ message: 'Ошибка при получении пользователя' }));
+    .catch(next); // Передаем ошибку централизованному обработчику
 };
 
 // создание пользователя
@@ -48,12 +42,18 @@ const updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-      } else {
-        res.status(200).send(user);
+        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
+
+      // Проверяем, совпадают ли введенные данные с обновленными данными пользователя
+      if (user.name === name && user.about === about) {
+        return res.status(200).send({ message: 'Данные совпадают', user });
+      }
+
+      // Если данные обновились, то возвращаем успешный ответ
+      return res.status(200).send(user);
     })
-    .catch(next);
+    .catch(next); // Передаем ошибку централизованному обработчику
 };
 // обновить аватар
 const updateAvatar = (req, res) => {
