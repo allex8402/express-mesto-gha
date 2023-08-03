@@ -1,4 +1,4 @@
-// const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 // возвращение всех пользователей
@@ -13,18 +13,23 @@ const getUsers = (req, res) => {
 };
 
 // возвращение пользователей по _id
-const getUserById = (req, res, next) => {
+const getUserById = (req, res) => {
   const { userId } = req.params;
-  User.findById(userId)
+  // Преобразовываем userId в ObjectId
+  const objectId = mongoose.Types.ObjectId(userId);
+
+  User.findById(objectId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+      } else {
+        res.status(200).send(user);
       }
-      return res.status(200).send(user);
     })
-    .catch(next); // Передаем ошибку централизованному обработчику
+    .catch(() => {
+      res.status(500).send({ message: 'Ошибка при получении пользователя' });
+    });
 };
-
 // создание пользователя
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -42,18 +47,12 @@ const updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+      } else {
+        res.status(200).send(user);
       }
-
-      // Проверяем, совпадают ли введенные данные с обновленными данными пользователя
-      if (user.name === name && user.about === about) {
-        return res.status(200).send({ message: 'Данные совпадают', user });
-      }
-
-      // Если данные обновились, то возвращаем успешный ответ
-      return res.status(200).send(user);
     })
-    .catch(next); // Передаем ошибку централизованному обработчику
+    .catch(next);
 };
 // обновить аватар
 const updateAvatar = (req, res) => {
