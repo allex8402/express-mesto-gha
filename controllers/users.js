@@ -15,10 +15,7 @@ const getUsers = (req, res) => {
 // возвращение пользователей по _id
 const getUserById = (req, res) => {
   const { userId } = req.params;
-  // Преобразовываем userId в ObjectId
-  const objectId = mongoose.Types.ObjectId(userId);
-
-  User.findById(objectId)
+  User.findById(new mongoose.Types.ObjectId(userId))
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
