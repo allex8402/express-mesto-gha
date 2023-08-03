@@ -1,71 +1,98 @@
 const Card = require('../models/card');
+const {
+  HTTP_STATUS_OK,
+  HTTP_STATUS_CREATED,
+  HTTP_STATUS_NOT_FOUND,
+  HTTP_STATUS_BAD_REQUEST,
+  HTTP_STATUS_SERVER_ERROR,
+} = require('../httpStatus');
 
-// возвращение всех карточек
+// Получение всех карточек
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      res.status(200).send(cards);
+      res.status(HTTP_STATUS_OK).send(cards);
     })
     .catch(() => {
-      res.status(500).send({ message: 'Ошибка при получении карточек' });
+      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при получении карточек' });
     });
 };
 
-// создать карточку
+// Создание карточки
 const createCard = (req, res) => {
-  // console.log(req.user._id);
   const { name, link } = req.body;
-  Card.create({ name, link })
+  const owner = req.user._id;
+
+  Card.create({ name, link, owner })
     .then((card) => {
-      res.status(201).send(card);
+      res.status(HTTP_STATUS_CREATED).send(card);
     })
-    .catch(() => {
-      res.status(400).send({ message: 'Ошибка при создании карточки' });
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки' });
+      } else {
+        res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при создании карточки' });
+      }
     });
 };
 
-// удалить карточку
+// Удаление карточки
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { cardId } = req.params;
+  Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
       } else {
-        res.status(200).send(card);
+        res.status(HTTP_STATUS_OK).send(card);
       }
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при удалении карточки' });
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый ресурс не найден' });
+      } else {
+        res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при удалении карточки' });
+      }
     });
 };
 
-// поставить лайк
+// Поставить лайк
 const likeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+  const { cardId } = req.params;
+  const userId = req.user._id;
+
+  Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(200).send(card);
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
+      return res.status(HTTP_STATUS_OK).send(card);
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при постановке лайка' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      }
+      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
 
 // убрать лайк
 const dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+  const { cardId } = req.params;
+  const userId = req.user._id;
+
+  Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(200).send(card);
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
+      return res.status(HTTP_STATUS_OK).send(card);
     })
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при снятии лайка' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      }
+      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
 

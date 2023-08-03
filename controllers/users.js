@@ -58,25 +58,23 @@ const updateProfile = (req, res, next) => {
     })
     .catch(next); // Передаем ошибку централизованному обработчику
 };
-// обновить аватар
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   if (!avatar) {
     return res.status(400).send({ message: 'Переданы некорректные данные' });
   }
+
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (!user) {
         return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
+
       return res.status(200).send(user);
     })
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).send({ message: 'Ошибка при обновлении аватара' });
-    });
+    .catch(() => res.status(500).send({ message: 'Ошибка при обновлении аватара' }));
 
-  return res.status(500).send({ message: 'Ошибка при обновлении аватара' });
+  return null;
 };
 module.exports = {
   getUsers,
