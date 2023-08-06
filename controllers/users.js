@@ -87,11 +87,6 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => {
-      if (!user) {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
-      }
-
-      // Проверяем, совпадает ли URL-адрес аватара в ответе с URL-адресом аватара в запросе
       if (user.avatar === avatar) {
         return res.status(HTTP_STATUS_OK).send(user);
       }
