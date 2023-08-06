@@ -36,11 +36,8 @@ const getUserById = (req, res) => {
       }
       return res.status(HTTP_STATUS_OK).json(user);
     })
-    .catch((error) => {
-      if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Некорректный формат идентификатора пользователя' });
-      }
-      return res.status(HTTP_STATUS_SERVER_ERROR).json({ message: 'Ошибка при получении пользователя' });
+    .catch(() => {
+      res.status(HTTP_STATUS_SERVER_ERROR).json({ message: 'Ошибка при получении пользователя' });
     });
 };
 
