@@ -31,7 +31,7 @@ const getUserById = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Некорректный формат идентификатора пользователя' });
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Некорректный формат идентификатора пользователя' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при получении пользователя' });
     });
@@ -52,8 +52,7 @@ const createUser = (req, res) => {
     });
 };
 
-// Обновляет профиль
-const updateProfile = (req, res, next) => {
+const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const { userId } = req.params;
   User.findByIdAndUpdate(userId, { name, about }, { new: true })
@@ -73,7 +72,7 @@ const updateProfile = (req, res, next) => {
       if (error.name === 'CastError') {
         return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Неверный формат идентификатора пользователя' });
       }
-      return next(error);
+      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
 // Обновляет аватар
