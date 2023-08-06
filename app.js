@@ -41,6 +41,11 @@ app.use((err, req, res, next) => {
   return res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
 });
 
+// Обработка неправильных путей (404)
+app.use((req, res) => {
+  res.status(httpStatus.HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый ресурс не найден' });
+});
+
 // Запускаем сервер на заданном порту
 app.listen(PORT, () => {
   console.log(`Приложение слушает порт ${PORT}`);
