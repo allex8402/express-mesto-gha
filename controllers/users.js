@@ -25,13 +25,13 @@ const getUserById = (req, res) => {
   User.findById(new mongoose.Types.ObjectId(userId))
     .then((user) => {
       if (!user) {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Некорректный формат идентификатора пользователя' });
+        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Некорректный формат идентификатора пользователя' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при получении пользователя' });
     });
