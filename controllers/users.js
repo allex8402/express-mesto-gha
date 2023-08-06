@@ -26,18 +26,18 @@ const getUsers = (req, res) => {
 const getUserById = (req, res) => {
   const { userId } = req.params;
   if (!ObjectId.isValid(userId)) {
-    res.status(HTTP_STATUS_BAD_REQUEST).json({ message: 'Некорректный формат идентификатора пользователя' });
+    res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Некорректный формат идентификатора пользователя' });
     return;
   }
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).json(user);
+      return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch(() => {
-      res.status(HTTP_STATUS_SERVER_ERROR).json({ message: 'Ошибка при получении пользователя' });
+      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при получении пользователя' });
     });
 };
 
@@ -55,7 +55,7 @@ const createUser = (req, res) => {
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
-
+// Oбновление профиля
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const { userId } = req.params;
@@ -64,21 +64,17 @@ const updateProfile = (req, res) => {
       if (!user) {
         return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
-
-      // Проверяем, совпадают ли введенные данные с обновленными данными пользователя
-      const responseMessage = user.name === name && user.about === about
-        ? 'Данные совпадают'
-        : user;
-
-      return res.status(HTTP_STATUS_OK).send(responseMessage);
-    })
-    .catch((error) => {
-      if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Неверный формат идентификатора пользователя' });
+      if (user.name === name && user.about === about) {
+        return res.status(HTTP_STATUS_OK).json({ message: 'Данные совпадают', user });
       }
-      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+
+      return res.status(HTTP_STATUS_OK).json(user);
+    })
+    .catch(() => {
+      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
+
 // Обновляет аватар
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
