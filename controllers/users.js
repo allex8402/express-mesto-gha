@@ -59,7 +59,7 @@ const createUser = (req, res) => {
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const userId = req.user._id;
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
@@ -72,7 +72,7 @@ const updateProfile = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении пользователя' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
