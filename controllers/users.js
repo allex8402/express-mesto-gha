@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
+
 const User = require('../models/user');
+
+const { ObjectId } = mongoose.Types;
 const {
   HTTP_STATUS_OK,
   HTTP_STATUS_CREATED,
@@ -22,18 +25,22 @@ const getUsers = (req, res) => {
 // Возвращает пользователя по _id
 const getUserById = (req, res) => {
   const { userId } = req.params;
-  User.findById(new mongoose.Types.ObjectId(userId))
+  if (!ObjectId.isValid(userId)) {
+    res.status(HTTP_STATUS_BAD_REQUEST).json({ message: 'Некорректный формат идентификатора пользователя' });
+    return;
+  }
+  User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).send(user);
+      return res.status(HTTP_STATUS_OK).json(user);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Некорректный формат идентификатора пользователя' });
+        return res.status(HTTP_STATUS_NOT_FOUND).json({ message: 'Некорректный формат идентификатора пользователя' });
       }
-      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при получении пользователя' });
+      return res.status(HTTP_STATUS_SERVER_ERROR).json({ message: 'Ошибка при получении пользователя' });
     });
 };
 
@@ -69,8 +76,8 @@ const updateProfile = (req, res) => {
       return res.status(HTTP_STATUS_OK).send(responseMessage);
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Неверный формат идентификатора пользователя' });
+      if (error.name === 'CastError') {
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Неверный формат идентификатора пользователя' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
