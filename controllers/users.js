@@ -62,7 +62,7 @@ const updateProfile = (req, res) => {
   User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       if (user.name === name && user.about === about) {
         return res.status(HTTP_STATUS_OK).send({ message: 'Данные совпадают', user });
