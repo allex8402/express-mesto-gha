@@ -36,8 +36,8 @@ app.use((err, req, res, next) => {
   if (err.name === 'CastError') {
     return res.status(httpStatus.HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
   }
-  next();
-  return res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+  res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+  return next(); // Верните next() здесь
 });
 // Обработка неправильных путей (404)
 app.use((req, res) => {
