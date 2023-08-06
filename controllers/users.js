@@ -65,10 +65,10 @@ const updateProfile = (req, res) => {
         return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       if (user.name === name && user.about === about) {
-        return res.status(HTTP_STATUS_OK).json({ message: 'Данные совпадают', user });
+        return res.status(HTTP_STATUS_OK).send({ message: 'Данные совпадают', user });
       }
 
-      return res.status(HTTP_STATUS_OK).json(user);
+      return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch(() => {
       res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
@@ -76,18 +76,27 @@ const updateProfile = (req, res) => {
 };
 
 // Обновляет аватар
+
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const { userId } = req.params;
+
   if (!avatar) {
     return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
   }
+
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => {
       if (!user) {
         return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).send(user);
+
+      // Проверяем, совпадает ли URL-адрес аватара в ответе с URL-адресом аватара в запросе
+      if (user.avatar === avatar) {
+        return res.status(HTTP_STATUS_OK).send(user);
+      }
+
+      return res.status(HTTP_STATUS_OK).send({ message: 'Аватар успешно обновлен', user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -97,7 +106,6 @@ const updateAvatar = (req, res) => {
     });
   return null;
 };
-
 module.exports = {
   getUsers,
   getUserById,

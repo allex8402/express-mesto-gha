@@ -41,10 +41,6 @@ app.use((err, req, res) => {
   return res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
 });
 
-app.patch('/404', (req, res) => {
-  res.status(httpStatus.HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый ресурс не найден' });
-});
-
 // Запускаем сервер на заданном порту
 app.listen(PORT, () => {
   console.log(`Приложение слушает порт ${PORT}`);
