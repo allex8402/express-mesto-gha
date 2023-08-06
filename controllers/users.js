@@ -69,8 +69,8 @@ const updateProfile = (req, res) => {
       return res.status(HTTP_STATUS_OK).send(responseMessage);
     })
     .catch((error) => {
-      if (error.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Неверный формат идентификатора пользователя' });
+      if (error.name === 'ValidationError') {
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Неверный формат идентификатора пользователя' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
