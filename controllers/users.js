@@ -70,11 +70,8 @@ const updateProfile = (req, res) => {
 
       return res.status(HTTP_STATUS_OK).send(user);
     })
-    .catch((error) => {
-      if (error.name === 'ValidationError') {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении пользователя' });
-      }
-      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+    .catch(() => {
+      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
 
