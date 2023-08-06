@@ -70,7 +70,7 @@ const likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Карточка не найдена' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
@@ -90,7 +90,7 @@ const dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Карточка не найдена' });
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Карточка не найдена' });
       }
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
