@@ -98,14 +98,12 @@ const updateAvatar = (req, res) => {
 
       return res.status(HTTP_STATUS_OK).send({ message: 'Аватар успешно обновлен', user });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Неверный формат идентификатора пользователя' });
-      }
-      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка при обновлении аватара' });
+    .catch(() => {
+      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
   return null;
 };
+
 module.exports = {
   getUsers,
   getUserById,
