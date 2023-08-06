@@ -56,10 +56,10 @@ const createUser = (req, res) => {
     });
 };
 // Oбновление профиля
-// Oбновление профиля
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
-  const { userId } = req.params;
+  const userId = req.user._id; // Используйте _id из req.user
+
   User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
@@ -67,7 +67,7 @@ const updateProfile = (req, res) => {
       }
 
       if (user.name === name && user.about === about) {
-        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Данные не обновлены' });
+        return res.status(HTTP_STATUS_OK).send({ message: 'Данные совпадают', user });
       }
 
       return res.status(HTTP_STATUS_OK).send(user);
@@ -78,6 +78,7 @@ const updateProfile = (req, res) => {
 };
 
 // Обновляет аватар
+
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const { userId } = req.params;
@@ -88,9 +89,6 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => {
-      if (!user) {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
-      }
       if (user.avatar === avatar) {
         return res.status(HTTP_STATUS_OK).send(user);
       }
@@ -100,6 +98,7 @@ const updateAvatar = (req, res) => {
     .catch(() => {
       res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
+  return null;
 };
 
 module.exports = {
