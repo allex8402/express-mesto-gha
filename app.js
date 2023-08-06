@@ -29,18 +29,16 @@ app.use('/cards', require('./routes/cards'));
 // Обработка ошибок
 const httpStatus = require('./httpStatus'); // Подключаем файл с HTTP-статус кодами
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   if (err.name === 'ValidationError') {
     return res.status(httpStatus.HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
   }
-
   if (err.name === 'CastError') {
     return res.status(httpStatus.HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
   }
-
+  next();
   return res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
 });
-
 // Обработка неправильных путей (404)
 app.use((req, res) => {
   res.status(httpStatus.HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый ресурс не найден' });
