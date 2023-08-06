@@ -61,13 +61,20 @@ const updateProfile = (req, res) => {
   const { userId } = req.params;
   User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((user) => {
+      if (!user) {
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
+      }
       if (user.name === name && user.about === about) {
         return res.status(HTTP_STATUS_OK).send({ message: 'Данные совпадают', user });
       }
+
       return res.status(HTTP_STATUS_OK).send(user);
     })
-    .catch(() => {
-      res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении пользователя' });
+      }
+      return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
 
