@@ -37,7 +37,7 @@ app.use((err, req, res, next) => {
     return res.status(httpStatus.HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
   }
   res.status(httpStatus.HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
-  return next(); // Верните next() здесь
+  return next();
 });
 // Обработка неправильных путей (404)
 app.use((req, res) => {
