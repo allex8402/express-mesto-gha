@@ -58,11 +58,11 @@ const createUser = (req, res) => {
 // Oбновление профиля
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
-  const { userId } = req.params;
+  const userId = req.user._id;
   User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
-        return res.status(HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       if (user.name === name && user.about === about) {
         return res.status(HTTP_STATUS_OK).send({ message: 'Данные совпадают', user });
@@ -79,7 +79,7 @@ const updateProfile = (req, res) => {
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  const { userId } = req.params;
+  const userId = req.user._id;
 
   if (!avatar) {
     return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
