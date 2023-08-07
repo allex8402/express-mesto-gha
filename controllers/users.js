@@ -59,14 +59,13 @@ const createUser = (req, res) => {
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const userId = req.user._id;
+
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      if (user.name === name && user.about === about) {
-        return res.status(HTTP_STATUS_OK).send(user);
-      }
+
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((error) => {
@@ -76,8 +75,6 @@ const updateProfile = (req, res) => {
       return res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
 };
-
-// Обновляет аватар
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
@@ -98,7 +95,6 @@ const updateAvatar = (req, res) => {
     .catch(() => {
       res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
-  return null;
 };
 
 module.exports = {
