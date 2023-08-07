@@ -64,9 +64,6 @@ const updateProfile = (req, res) => {
       if (!user) {
         return res.status(HTTP_STATUS_BAD_REQUEST).send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      if (user.name === name && user.about === about) {
-        return res.status(HTTP_STATUS_OK).send(user);
-      }
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((error) => {
@@ -89,10 +86,6 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true })
     .then((user) => {
-      if (user.avatar === avatar) {
-        return res.status(HTTP_STATUS_OK).send(user);
-      }
-
       return res.status(HTTP_STATUS_OK).send({ message: 'Аватар успешно обновлен', user });
     })
     .catch(() => {
