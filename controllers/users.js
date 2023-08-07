@@ -67,7 +67,6 @@ const updateProfile = (req, res) => {
       if (user.name === name && user.about === about) {
         return res.status(HTTP_STATUS_OK).send(user);
       }
-
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((error) => {
