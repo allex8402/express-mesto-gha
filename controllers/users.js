@@ -95,6 +95,7 @@ const updateAvatar = (req, res) => {
     .catch(() => {
       res.status(HTTP_STATUS_SERVER_ERROR).send({ message: 'Ошибка сервера' });
     });
+  return null;
 };
 
 module.exports = {
