@@ -3,12 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 
-require('dotenv').config();
-
-const { PORT = 3000, DB_URL } = process.env;
+const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect(DB_URL, {
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
 });
 
@@ -22,7 +20,7 @@ app.use(express.static(path.join(__dirname, 'build')));
 // временное решение авторизации
 app.use((req, res, next) => {
   req.user = {
-    _id: '64c7b9b08e4b58d6f9e23954',
+    _id: '64c7b9b08e4b58d6f9e23954', // Пример заглушки, в реальном приложении идентификатор пользователя будет определяться на основе аутентификации
   };
   next();
 });
