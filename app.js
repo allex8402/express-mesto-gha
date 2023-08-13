@@ -2,8 +2,12 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+
 const app = express();
 
 mongoose.connect(DB_URL, {
@@ -17,23 +21,35 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'build')));
 
-// временное решение авторизации
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64c7b9b08e4b58d6f9e23954', // Пример заглушки, в реальном приложении идентификатор пользователя будет определяться на основе аутентификации
-  };
-  next();
-});
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+}), login);
 
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string()
+      .pattern(/http[s]?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/),
+  }),
+}), createUser);
+
+app.use(auth);
 // Подключаем маршруты для пользователей и карточек
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-// Обработка ошибок
-const httpStatus = require('./httpStatus');
+app.use(errors());
 
-app.use((req, res) => {
-  res.status(httpStatus.HTTP_STATUS_NOT_FOUND).json({ message: 'Запрашиваемый ресурс не найден' });
+app.use((err, req, res) => {
+  const { statusCode = 500, message } = err;
+
+  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
 });
 
 // Запускаем сервер на заданном порту
