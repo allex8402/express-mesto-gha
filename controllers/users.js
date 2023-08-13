@@ -97,22 +97,51 @@ const updateAvatar = (req, res, next) => {
     .catch(next);
 };
 
-const login = (req, res) => {
+// const login = (req, res) => {
+//   const { email, password } = req.body;
+//   return User.findUserByCredentials(email, password)
+//     .then((user) => {
+//       const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
+//       res.cookie('jwt', token, {
+//         maxAge: 604800,
+//         httpOnly: true,
+//         sameSite: true,
+//         secure: true,
+//       });
+//       res.send({ token });
+//     })
+//     .catch(() => {
+//       throw new UnauthorizedError({ message: 'Неправильные почта или пароль' });
+//     });
+// };
+const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+
+  User.findOne({ email })
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
-      res.cookie('jwt', token, {
-        maxAge: 604800,
-        httpOnly: true,
-        sameSite: true,
-        secure: true,
-      });
-      res.send({ token });
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UnauthorizedError('Неправильные почта или пароль');
+          }
+          const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
+
+          // Вы можете записать JWT в куку или отправить его в теле ответа
+          // В данном примере, мы используем куку
+          res.cookie('jwt', token, {
+            maxAge: 604800,
+            httpOnly: true,
+            sameSite: true,
+            secure: true,
+          });
+
+          res.send({ token });
+        });
     })
-    .catch(() => {
-      throw new UnauthorizedError({ message: 'Неправильные почта или пароль' });
-    });
+    .catch(next);
 };
 
 const getUserInfo = (req, res, next) => {
