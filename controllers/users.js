@@ -35,6 +35,21 @@ const getUserById = (req, res, next) => {
     .catch(next);
 };
 
+const getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
+    .then((user) => res.send({
+      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+    }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new ValidationError('Переданы некорректные данные _id пользователя.');
+      }
+      next(err);
+    })
+    .catch(next);
+};
+
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
@@ -45,7 +60,7 @@ const createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(201).send({
+    .then((user) => res.status(200).send({
       _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
     }))
     .catch((error) => {
@@ -111,7 +126,7 @@ const login = (req, res, next) => {
           if (!matched) {
             throw new UnauthorizedError('Неправильные почта или пароль');
           }
-          const token = jwt.sign({ _id: req.user._id }, 'some-sekret-key', { expiresIn: '7d' });
+          const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
 
           // Вы можете записать JWT в куку или отправить его в теле ответа
           // В данном примере, мы используем куку
@@ -124,19 +139,6 @@ const login = (req, res, next) => {
 
           res.send({ token });
         });
-    })
-    .catch(next);
-};
-
-const getUserInfo = (req, res, next) => {
-  const userId = req.user._id;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
-      }
-      return res.status(200).send(user);
     })
     .catch(next);
 };
