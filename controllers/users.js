@@ -35,21 +35,6 @@ const getUserById = (req, res, next) => {
     .catch(next);
 };
 
-const getUserInfo = (req, res, next) => {
-  User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
-    .then((user) => res.send({
-      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-    }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные _id пользователя.');
-      }
-      next(err);
-    })
-    .catch(next);
-};
-
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
@@ -67,7 +52,7 @@ const createUser = (req, res, next) => {
       if (error.name === 'ValidationError') {
         throw new ValidationError('Переданы некорректные данные при создании пользователя');
       }
-      if (error.code === 11000) {
+      if (error.name === 'MongoError' && error.code === 11000) {
         throw new ConflictError('Пользователь с таким email уже существует');
       }
       next(error);
@@ -136,9 +121,22 @@ const login = (req, res, next) => {
             sameSite: true,
             secure: true,
           });
-
           res.send({ token });
         });
+    })
+    .catch(next);
+};
+const getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
+    .then((user) => res.send({
+      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+    }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new ValidationError('Переданы некорректные данные _id пользователя.');
+      }
+      next(err);
     })
     .catch(next);
 };
