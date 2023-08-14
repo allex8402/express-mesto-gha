@@ -13,12 +13,9 @@ const { ObjectId } = mongoose.Types;
 // Возвращает всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => {
-      res.status(200).send(users);
-    })
-    .catch(next); // Используем next() для передачи ошибки в обработчик ошибок
+    .then((users) => res.status(200).send({ data: users }))
+    .catch(next);
 };
-
 // Возвращает пользователя по _id
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
@@ -101,31 +98,35 @@ const updateAvatar = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new UnauthorizedError('Неправильные почта или пароль');
+        return Promise.reject(new Error('Неправильные почта или пароль'));
       }
+
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new UnauthorizedError('Неправильные почта или пароль');
+            // хеши не совпали — отклоняем промис
+            return Promise.reject(new Error('Неправильные почта или пароль'));
           }
-          const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
 
-          // Вы можете записать JWT в куку или отправить его в теле ответа
-          // В данном примере, мы используем куку
-          res.cookie('jwt', token, {
-            maxAge: 604800,
-            httpOnly: true,
-            sameSite: true,
-            secure: true,
-          });
-          res.send({ token });
+          // аутентификация успешна
+          return user;
         });
+    })
+    .then((user) => {
+      // создадим токен
+      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+      // вернём токен
+      res.send({ token });
+    })
+    .catch(() => {
+      throw new UnauthorizedError('ошибка');
     })
     .catch(next);
 };
+
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
