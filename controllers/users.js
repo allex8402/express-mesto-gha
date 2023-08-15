@@ -149,20 +149,28 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
+// const getUserInfo = (req, res, next) => {
+//   User.findById(req.user._id)
+//     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
+//     .then((user) => res.send({
+//       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+//     }))
+//     .catch((err) => {
+//       if (err.name === 'CastError') {
+//         throw new ValidationError('Переданы некорректные данные _id пользователя.');
+//       }
+//       next(err);
+//     })
+//     .catch(next);
+// };
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
+    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
     .then((user) => res.send({
       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
     }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные _id пользователя.');
-      }
-      next(err);
-    })
     .catch(next);
 };
-
 module.exports = {
   getUsers,
   getUserById,
