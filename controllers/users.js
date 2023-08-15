@@ -11,16 +11,7 @@ const NotFoundError = require('../errors/NotFoundError');
 const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
-// const getUsers = (req, res, next) => {
-//   User.find({})
-//     .orFail(new NotFoundError('Пользователи не найдены.'))
-//     .then((users) => res.send(users.map(
-//       (user) => ({
-//         _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-//       }),
-//     )))
-//     .catch(next);
-// };
+
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
@@ -28,26 +19,14 @@ const getUsers = (req, res, next) => {
     })
     .catch(next); // Используем next() для передачи ошибки в обработчик ошибок
 };
+
 // Возвращает пользователя по _id
-// const getUserById = (req, res, next) => {
-//   const { userId } = req.params;
-//   if (!ObjectId.isValid(userId)) {
-//     throw new ValidationError('Переданы некорректные данные');
-//   }
-//   User.findById(userId)
-//     .then((user) => {
-//       if (!user) {
-//         throw new NotFoundError('Запрашиваемый пользователь не найден');
-//       }
-//       res.status(200).send({ data: user });
-//     })
-//     .catch(next);
-// };
+
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   if (!ObjectId.isValid(userId)) {
-    throw new ValidationError('Некорректный формат ID пользователя');
+    throw new ValidationError('Переданы некорректные данные');
   }
 
   User.findById(userId)
@@ -59,6 +38,7 @@ const getUserById = (req, res, next) => {
     })
     .catch(next);
 };
+
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
@@ -81,6 +61,7 @@ const createUser = (req, res, next) => {
       next(error);
     });
 };
+
 // Oбновление профиля
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
@@ -123,32 +104,27 @@ const updateAvatar = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
-  User.findOne({ email }).select('+password')
+  User.findOne({ email })
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        throw new UnauthorizedError('Неправильные почта или пароль');
       }
-
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            // хеши не совпали — отклоняем промис
-            return Promise.reject(new Error('Неправильные почта или пароль'));
+            throw new UnauthorizedError('Неправильные почта или пароль');
           }
+          const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
 
-          // аутентификация успешна
-          return user;
+          res.cookie('jwt', token, {
+            maxAge: 604800,
+            httpOnly: true,
+            sameSite: true,
+            secure: true,
+          });
+
+          res.send({ token });
         });
-    })
-    .then((user) => {
-      // создадим токен
-      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
-      // вернём токен
-      res.send({ token });
-    })
-    .catch(() => {
-      throw new UnauthorizedError('ошибка');
     })
     .catch(next);
 };
@@ -159,6 +135,12 @@ const getUserInfo = (req, res, next) => {
     .then((user) => res.send({
       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
     }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new ValidationError('Переданы некорректные данные _id пользователя.');
+      }
+      next(err);
+    })
     .catch(next);
 };
 
