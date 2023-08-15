@@ -13,15 +13,37 @@ const { ObjectId } = mongoose.Types;
 // Возвращает всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send({ data: users }))
+    .orFail(new NotFoundError('Пользователи не найдены.'))
+    .then((users) => res.send(users.map(
+      (user) => ({
+        _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+      }),
+    )))
     .catch(next);
 };
+
 // Возвращает пользователя по _id
+// const getUserById = (req, res, next) => {
+//   const { userId } = req.params;
+//   if (!ObjectId.isValid(userId)) {
+//     throw new ValidationError('Переданы некорректные данные');
+//   }
+//   User.findById(userId)
+//     .then((user) => {
+//       if (!user) {
+//         throw new NotFoundError('Запрашиваемый пользователь не найден');
+//       }
+//       res.status(200).send({ data: user });
+//     })
+//     .catch(next);
+// };
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
+
   if (!ObjectId.isValid(userId)) {
-    throw new ValidationError('Переданы некорректные данные');
+    throw new ValidationError('Некорректный формат ID пользователя');
   }
+
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -31,7 +53,6 @@ const getUserById = (req, res, next) => {
     })
     .catch(next);
 };
-
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
@@ -55,6 +76,7 @@ const createUser = (req, res, next) => {
       next(error);
     });
 };
+
 // Oбновление профиля
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
@@ -129,7 +151,6 @@ const login = (req, res, next) => {
 
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
     .then((user) => res.send({
       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
     }))
