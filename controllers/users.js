@@ -145,11 +145,11 @@ const getUserInfo = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new ValidationError('Переданы некорректные данные _id пользователя.');
+        next(new ValidationError('Переданы некорректные данные _id пользователя.'));
+      } else {
+        next(err);
       }
-      next(err);
-    })
-    .catch(next);
+    });
 };
 
 module.exports = {
