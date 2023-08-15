@@ -52,7 +52,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
   next();
 });
-
 // Запускаем сервер на заданном порту
 app.listen(PORT, () => {
   console.log(`Приложение слушает порт ${PORT}`);

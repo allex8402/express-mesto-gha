@@ -11,17 +11,23 @@ const NotFoundError = require('../errors/NotFoundError');
 const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
+// const getUsers = (req, res, next) => {
+//   User.find({})
+//     .orFail(new NotFoundError('Пользователи не найдены.'))
+//     .then((users) => res.send(users.map(
+//       (user) => ({
+//         _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+//       }),
+//     )))
+//     .catch(next);
+// };
 const getUsers = (req, res, next) => {
   User.find({})
-    .orFail(new NotFoundError('Пользователи не найдены.'))
-    .then((users) => res.send(users.map(
-      (user) => ({
-        _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-      }),
-    )))
-    .catch(next);
+    .then((users) => {
+      res.status(200).send(users);
+    })
+    .catch(next); // Используем next() для передачи ошибки в обработчик ошибок
 };
-
 // Возвращает пользователя по _id
 // const getUserById = (req, res, next) => {
 //   const { userId } = req.params;
@@ -58,7 +64,6 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
@@ -76,7 +81,6 @@ const createUser = (req, res, next) => {
       next(error);
     });
 };
-
 // Oбновление профиля
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
@@ -149,20 +153,6 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
-// const getUserInfo = (req, res, next) => {
-//   User.findById(req.user._id)
-//     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
-//     .then((user) => res.send({
-//       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-//     }))
-//     .catch((err) => {
-//       if (err.name === 'CastError') {
-//         throw new ValidationError('Переданы некорректные данные _id пользователя.');
-//       }
-//       next(err);
-//     })
-//     .catch(next);
-// };
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
@@ -171,6 +161,7 @@ const getUserInfo = (req, res, next) => {
     }))
     .catch(next);
 };
+
 module.exports = {
   getUsers,
   getUserById,
