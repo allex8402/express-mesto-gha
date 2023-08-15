@@ -40,7 +40,7 @@ const getUserById = (req, res, next) => {
 };
 
 // Создаёт нового пользователя
-const createUser = (req, res, next) => {
+const createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -48,9 +48,7 @@ const createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(200).send({
-      _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
-    }))
+    .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {
         throw new ValidationError('Переданы некорректные данные при создании пользователя');
@@ -58,7 +56,6 @@ const createUser = (req, res, next) => {
       if (error.name === 'MongoError' && error.code === 11000) {
         throw new ConflictError('Пользователь с таким email уже существует');
       }
-      next(error);
     });
 };
 
@@ -104,7 +101,7 @@ const updateAvatar = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError('Неправильные почта или пароль');
