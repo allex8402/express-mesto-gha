@@ -24,7 +24,7 @@ const getUsers = (req, res, next) => {
 
 // Возвращает пользователя по _id
 
-const getUserById = (req, res, next) => {
+const getUserById = (req, res) => {
   const { userId } = req.params;
 
   if (!ObjectId.isValid(userId)) {
@@ -37,8 +37,7 @@ const getUserById = (req, res, next) => {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       res.status(200).send({ data: user });
-    })
-    .catch(next);
+    });
 };
 
 // Создаёт нового пользователя
@@ -138,18 +137,15 @@ const login = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь по указанному _id не найден.'))
-    .then((user) => res.send({
-      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-    }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные _id пользователя.'));
-      } else {
-        next(err);
+  const { _id } = req.user;
+  User.find({ _id })
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь не найден'));
       }
-    });
+      return res.send(...user);
+    })
+    .catch(next);
 };
 
 module.exports = {
