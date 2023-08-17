@@ -27,7 +27,6 @@ const getUserById = (req, res, next) => {
   }
 
   User.findById(userId)
-    .orFail()
     .then((user) => {
       if (!user) {
         return next(new NotFoundError('Запрашиваемый пользователь не найден'));
@@ -129,7 +128,8 @@ const login = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  const { _id } = req.user;
+  const { _id } = req.user._id;
+
   User.findById(_id)
     .orFail()
     .then((user) => {
