@@ -14,14 +14,9 @@ const { ObjectId } = mongoose.Types;
 
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => {
-      res.status(200).send({
-        _id: users._id, name: users.name, about: users.about, avatar: users.avatar,
-      });
-    })
-    .catch(next); // Используем next() для передачи ошибки в обработчик ошибок
+    .then((users) => res.status(200).send(users))
+    .catch((err) => next(err));
 };
-
 // Возвращает пользователя по _id
 
 const getUserById = (req, res) => {
@@ -123,14 +118,7 @@ const login = (req, res, next) => {
           }
           const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
 
-          res.cookie('jwt', token, {
-            maxAge: 604800,
-            httpOnly: true,
-            sameSite: true,
-            secure: true,
-          });
-
-          res.send({ token });
+          res.status(200).send({ token }); // Здесь отправляем токен в теле ответа
         });
     })
     .catch(next);
