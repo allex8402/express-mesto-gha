@@ -1,4 +1,4 @@
-// const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -8,7 +8,7 @@ const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
-// const { ObjectId } = mongoose.Types;
+const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
 
@@ -22,16 +22,21 @@ const getUsers = (req, res, next) => {
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
+  if (!ObjectId.isValid(userId)) {
+    return next(new ValidationError('Переданы некорректные данные'));
+  }
+
   User.findById(userId)
-    .orFail()
     .then((user) => {
-      res.status(200).send(user);
+      if (!user) {
+        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      }
+      return res.status(200).send(user); // Возвращаем результат в этой ветви
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      } else { next(err); }
+      next(err); // Возвращаем ошибку в этой ветви
     });
+  return null;
 };
 
 // Создаёт нового пользователя
