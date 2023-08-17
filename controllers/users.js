@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -8,7 +8,7 @@ const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
-const { ObjectId } = mongoose.Types;
+// const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
 
@@ -19,19 +19,18 @@ const getUsers = (req, res, next) => {
 };
 // Возвращает пользователя по _id
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
-  if (!ObjectId.isValid(userId)) {
-    throw new ValidationError('Переданы некорректные данные');
-  }
-
   User.findById(userId)
+    .orFail()
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
-      }
-      res.status(200).send({ data: user });
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else { next(err); }
     });
 };
 
@@ -126,14 +125,17 @@ const login = (req, res, next) => {
 
 const getUserInfo = (req, res, next) => {
   const { _id } = req.user;
-  User.find({ _id })
+
+  User.findById(_id)
+    .orFail()
     .then((user) => {
-      if (!user) {
-        next(new NotFoundError('Пользователь не найден'));
-      }
-      return res.send(...user);
+      res.status(200).send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else { next(err); }
+    });
 };
 
 module.exports = {
