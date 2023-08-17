@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 
-const ValidationError = require('../errors/UnauthorizedError');
+const ValidationError = require('../errors/ValidationError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
