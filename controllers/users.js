@@ -39,6 +39,25 @@ const getUserById = (req, res, next) => {
   return null;
 };
 
+const getUserInfo = (req, res, next) => {
+  const { userId } = req.user._id;
+
+  User.findById(userId)
+    .orFail()
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      }
+      return res.status(200).send(user);
+    })
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        return next(new ValidationError('Ошибка валидации при запросе информации о пользователе'));
+      }
+      return next(error); // Вернем ошибку для всех остальных случаев
+    });
+};
+
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
@@ -125,21 +144,6 @@ const login = (req, res, next) => {
         });
     })
     .catch(next);
-};
-
-const getUserInfo = (req, res, next) => {
-  const userId = req.user._id;
-
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: 'Пользователь не найден' });
-      }
-      return res.status(200).send(user);
-    })
-    .catch((err) => {
-      next(err);
-    });
 };
 
 module.exports = {
