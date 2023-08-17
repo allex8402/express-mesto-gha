@@ -130,6 +130,10 @@ const login = (req, res, next) => {
 const getUserInfo = (req, res, next) => {
   const { _id } = req.user;
 
+  if (!ObjectId.isValid(_id)) {
+    return next(new ValidationError('Переданы некорректные данные'));
+  }
+
   User.findById(_id)
     .then((user) => {
       if (!user) {
