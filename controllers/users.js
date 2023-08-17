@@ -131,15 +131,16 @@ const getUserInfo = (req, res, next) => {
   const { _id } = req.user;
 
   User.findById(_id)
-    .orFail()
     .then((user) => {
-      res.status(200).send(user);
+      if (!user) {
+        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      }
+      return res.status(200).send(user); // Возвращаем результат в этой ветви
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      } else { next(err); }
+      next(err); // Возвращаем ошибку в этой ветви
     });
+  return null;
 };
 
 module.exports = {
