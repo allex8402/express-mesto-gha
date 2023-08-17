@@ -128,20 +128,18 @@ const login = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  const { _id } = req.user._id;
+  const userId = req.user._id;
 
-  User.findById(_id)
-    .orFail()
+  User.findById(userId)
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        return res.status(404).json({ message: 'Пользователь не найден' });
       }
-      return res.status(200).send(user); // Возвращаем результат в этой ветви
+      return res.status(200).send(user);
     })
     .catch((err) => {
-      next(err); // Возвращаем ошибку в этой ветви
+      next(err);
     });
-  return null;
 };
 
 module.exports = {
