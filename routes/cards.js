@@ -10,7 +10,7 @@ const cardsRouter = express.Router();
 const cardIdSchema = Joi.string().hex().length(24).required();
 const cardSchema = {
   name: Joi.string().min(2).max(30).required(),
-  link: Joi.string().required(),
+  link: Joi.string().uri().required(),
 };
 
 cardsRouter.get('/', getCards);

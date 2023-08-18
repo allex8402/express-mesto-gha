@@ -18,13 +18,13 @@ const createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
+    .orFail()
     .then((card) => {
       res.status(201).send(card);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        const linkError = error.details.find((detail) => detail.context.key === 'link');
-        if (linkError) {
+        if (error.errors && error.errors.link) {
           res.status(400).send({ message: 'Некорректный URL' });
         } else {
           next(new ValidationError('Переданы некорректные данные'));
