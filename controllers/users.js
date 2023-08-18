@@ -23,7 +23,7 @@ const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .orFail()
+    .orFail(new NotFoundError('Пользователь не найден'))
     .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {

@@ -42,12 +42,8 @@ const deleteCard = (req, res, next) => {
 
   // Поиск карточки
   Card.findById(cardId)
-    .orFail()
+    .orFail(new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена');
-      }
-
       // Проверка, принадлежит ли карточка текущему пользователю
       if (card.owner.toString() !== req.user._id.toString()) {
         return res.status(403).send({ message: 'Недостаточно прав для удаления чужой карточки' });
