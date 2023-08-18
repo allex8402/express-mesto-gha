@@ -71,17 +71,16 @@ const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
 
-  Card.findById(cardId)
-    .orFail()
-    .then(() => Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true }))
+  Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
+    .orFail(new NotFoundError('Карточка не найдена'))
     .then((updatedCard) => {
       res.status(200).send(updatedCard);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
         res.status(400).send({ message: 'Некорректный формат ID карточки' });
-      } else if (error.name === 'CastError' || error.name === 'NotFoundError') {
-        next(new NotFoundError('Карточка не найдена'));
+      } else if (error.name === 'CastError') {
+        next(new NotFoundError('Запрашиваемый ресурс не найден'));
       } else {
         next(error);
       }
