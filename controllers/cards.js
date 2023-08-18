@@ -7,24 +7,28 @@ const NotFoundError = require('../errors/NotFoundError');
 // Получение всех карточек
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => {
-      res.status(200).send(cards);
-    })
-    .catch(next);
+    .orFail()
+    .then((cards) => res.status(200).send(cards))
+    .catch((err) => next(err));
 };
 
 // Создание карточки
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
+  const owner = req.user._id;
 
-  Card.create(req.user._id, { name, link })
+  Card.create({ name, link, owner })
     .orFail()
     .then((card) => {
       res.status(200).send(card);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при cоздании карточки'));
+        if (error.errors && error.errors.avatar) {
+          res.status(400).send({ message: 'Некорректный URL' });
+        } else {
+          next(new ValidationError('Переданы некорректные данные'));
+        }
       } else if (error.name === 'NotFoundError') {
         next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
@@ -68,17 +72,18 @@ const likeCard = (req, res, next) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
+    .orFail
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена');
-      }
-      return res.status(200).send(card);
+      res.status(200).send(card);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new NotFoundError('Карточка не найдена');
+    .catch((error) => {
+      if (error.name === 'CastError' || error.name === 'NotFoundError') {
+        next(new NotFoundError('Карточка не найдена'));
+      } else if (error.name === 'ValidationError') {
+        res.status(400).send({ message: 'Некорректный формат ID карточки' });
+      } else {
+        next(error);
       }
-      next(err);
     });
 };
 

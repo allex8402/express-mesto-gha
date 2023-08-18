@@ -22,10 +22,6 @@ const getUsers = (req, res, next) => {
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
-  // if (!ObjectId.isValid(userId)) {
-  //   return next(new ValidationError('Переданы некорректные данные'));
-  // }
-
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
