@@ -16,15 +16,17 @@ const getCards = (req, res, next) => {
 // Создание карточки
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
 
-  Card.create({ name, link, owner })
+  Card.create(req.user._id, { name, link })
+    .orFail()
     .then((card) => {
-      res.status(201).send(card);
+      res.status(200).send(card);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при создании карточки');
+        next(new ValidationError('Переданы некорректные данные при cоздании карточки'));
+      } else if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
         next(error);
       }

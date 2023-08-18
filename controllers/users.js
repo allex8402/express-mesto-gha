@@ -105,21 +105,25 @@ const updateProfile = (req, res, next) => {
 
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  const userId = req.user._id;
 
-  if (!avatar) {
-    throw new ValidationError('Переданы некорректные данные');
-  }
-
-  User.findByIdAndUpdate(userId, { avatar }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .orFail()
     .then((user) => {
-      if (user.avatar === avatar) {
-        return res.status(200).send(user);
-      }
-
-      return res.status(201).send('Аватар успешно обновлен', user);
+      res.status(200).send(user);
     })
-    .catch(next);
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        if (error.errors && error.errors.avatar) {
+          res.status(400).send({ message: 'Некорректный URL для аватара' });
+        } else {
+          next(new ValidationError('Переданы некорректные данные при обновлении аватара'));
+        }
+      } else if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else {
+        next(error);
+      }
+    });
 };
 
 const login = (req, res, next) => {
