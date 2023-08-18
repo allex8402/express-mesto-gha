@@ -18,7 +18,6 @@ const createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .orFail()
     .then((card) => {
       res.status(201).send(card);
     })
