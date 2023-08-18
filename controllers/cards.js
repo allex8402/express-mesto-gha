@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 
 const ValidationError = require('../errors/ValidationError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
+
 const NotFoundError = require('../errors/NotFoundError');
 
 // Получение всех карточек
@@ -42,6 +42,7 @@ const deleteCard = (req, res, next) => {
 
   // Поиск карточки
   Card.findById(cardId)
+    .orFail()
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка не найдена');
@@ -49,7 +50,7 @@ const deleteCard = (req, res, next) => {
 
       // Проверка, принадлежит ли карточка текущему пользователю
       if (card.owner.toString() !== req.user._id.toString()) {
-        throw new UnauthorizedError('Недостаточно прав для удаления карточки');
+        return res.status(403).send({ message: 'Недостаточно прав для удаления чужой карточки' });
       }
 
       // Удаление карточки
@@ -70,16 +71,17 @@ const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
 
-  Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
-    .orFail
-    .then((card) => {
-      res.status(200).send(card);
+  Card.findById(cardId)
+    .orFail()
+    .then(() => Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true }))
+    .then((updatedCard) => {
+      res.status(200).send(updatedCard);
     })
     .catch((error) => {
-      if (error.name === 'CastError' || error.name === 'NotFoundError') {
-        next(new NotFoundError('Карточка не найдена'));
-      } else if (error.name === 'ValidationError') {
+      if (error.name === 'ValidationError') {
         res.status(400).send({ message: 'Некорректный формат ID карточки' });
+      } else if (error.name === 'CastError' || error.name === 'NotFoundError') {
+        next(new NotFoundError('Карточка не найдена'));
       } else {
         next(error);
       }
