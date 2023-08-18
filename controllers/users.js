@@ -27,33 +27,31 @@ const getUserById = (req, res, next) => {
   // }
 
   User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
+    .orFail()
+    .then((user) => res.status(200).send(user))
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
+      } else if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else {
+        next(error);
       }
-      return res.status(200).send(user); // Возвращаем результат в этой ветви
-    })
-    .catch((err) => {
-      next(err); // Возвращаем ошибку в этой ветви
     });
-  return null;
 };
 
 const getUserInfo = (req, res, next) => {
-  const userId = req.user._id;
-  User.findById(userId)
+  User.findById(req.user._id)
     .orFail()
-    .then((user) => {
-      if (!user) {
-        return next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      }
-      return res.status(200).send(user);
-    })
+    .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        return next(new ValidationError('Ошибка валидации при запросе информации о пользователе'));
+        next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
+      } else if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else {
+        next(error);
       }
-      return next(error); // Вернем ошибку для всех остальных случаев
     });
 };
 
