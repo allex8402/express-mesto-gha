@@ -39,7 +39,12 @@ const getUserById = (req, res, next) => {
 const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
+      }
+      res.status(200).send(user);
+    })
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
