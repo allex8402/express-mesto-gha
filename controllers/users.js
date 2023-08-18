@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -8,7 +8,7 @@ const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
-const { ObjectId } = mongoose.Types;
+// const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
 
@@ -22,9 +22,9 @@ const getUsers = (req, res, next) => {
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
-  if (!ObjectId.isValid(userId)) {
-    return next(new ValidationError('Переданы некорректные данные'));
-  }
+  // if (!ObjectId.isValid(userId)) {
+  //   return next(new ValidationError('Переданы некорректные данные'));
+  // }
 
   User.findById(userId)
     .then((user) => {
@@ -40,8 +40,7 @@ const getUserById = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  const { userId } = req.user._id;
-
+  const userId = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => {
@@ -93,17 +92,16 @@ const updateProfile = (req, res, next) => {
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
-      }
-      return res.status(200).send(user);
-    })
+    .orFail()
+    .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при обновлении пользователя');
+        next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
+      } else if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else {
+        next(error);
       }
-      next(error);
     });
 };
 
