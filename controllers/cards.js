@@ -23,7 +23,8 @@ const createCard = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        if (error.errors && error.errors.link) {
+        const linkError = error.details.find((detail) => detail.context.key === 'link');
+        if (linkError) {
           res.status(400).send({ message: 'Некорректный URL' });
         } else {
           next(new ValidationError('Переданы некорректные данные'));
