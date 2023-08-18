@@ -92,17 +92,18 @@ const dislikeCard = (req, res, next) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
+    .orFail
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена');
-      }
-      return res.status(200).send(card);
+      res.status(200).send(card);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        throw new NotFoundError('Карточка не найдена');
+    .catch((error) => {
+      if (error.name === 'CastError' || error.name === 'NotFoundError') {
+        next(new NotFoundError('Карточка не найдена'));
+      } else if (error.name === 'ValidationError') {
+        res.status(400).send({ message: 'Некорректный формат ID карточки' });
+      } else {
+        next(error);
       }
-      next(err);
     });
 };
 
