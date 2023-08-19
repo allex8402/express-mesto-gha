@@ -7,10 +7,24 @@ const NotFoundError = require('../errors/NotFoundError');
 // Получение всех карточек
 const getCards = (req, res, next) => {
   Card.find({})
-    .orFail()
-    .then((cards) => res.status(200).send(cards))
-    .catch((err) => next(err));
+    .orFail(new NotFoundError('Карточки не найдены.'))
+    .then((cards) => res.send(cards.map(
+      (card) => ({
+        _id: card._id,
+        name: card.name,
+        link: card.link,
+        likes: card.likes,
+        owner: card.owner,
+        createdAt: card.createdAt,
+      }),
+    )))
+    .catch(next);
 };
+//   Card.find({})
+//     .orFail()
+//     .then((cards) => res.status(200).send(cards))
+//     .catch((err) => next(err));
+// };
 
 // Создание карточки
 const createCard = (req, res, next) => {
