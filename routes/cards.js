@@ -8,9 +8,11 @@ const {
 const cardsRouter = express.Router();
 
 const cardIdSchema = Joi.string().hex().length(24).required();
+
 const cardSchema = {
   name: Joi.string().min(2).max(30).required(),
-  link: Joi.string().uri().required(),
+  link: Joi.string()
+    .pattern(/http[s]?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/),
 };
 
 cardsRouter.get('/', getCards);
