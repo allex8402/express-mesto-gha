@@ -7,30 +7,37 @@ const NotFoundError = require('../errors/NotFoundError');
 // Получение всех карточек
 const getCards = (req, res, next) => {
   Card.find({})
-    .orFail(new NotFoundError('Карточки не найдены.'))
-    .then((cards) => res.send(cards.map(
-      (card) => ({
-        _id: card._id,
-        name: card.name,
-        link: card.link,
-        likes: card.likes,
-        owner: card.owner,
-        createdAt: card.createdAt,
-      }),
-    )))
-    .catch(next);
+    .orFail()
+    .then((cards) => res.status(200).send(cards))
+    .catch((err) => next(err));
 };
-//   Card.find({})
-//     .orFail()
-//     .then((cards) => res.status(200).send(cards))
-//     .catch((err) => next(err));
-// };
 
 // Создание карточки
+// const createCard = (req, res, next) => {
+//   const { name, link } = req.body;
+//   const owner = req.user._id;
+
+//   Card.create({ name, link, owner })
+//     .then((card) => {
+//       res.status(201).send(card);
+//     })
+//     .catch((error) => {
+//       if (error.name === 'ValidationError') {
+//         if (error.errors && error.errors.link) {
+//           res.status(400).send({ message: 'Некорректный URL' });
+//         } else {
+//           next(new ValidationError('Переданы некорректные данные'));
+//         }
+//       } else if (error.name === 'NotFoundError') {
+//         next(new NotFoundError('Запрашиваемый пользователь не найден'));
+//       } else {
+//         next(error);
+//       }
+//     });
+// };
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
-
   Card.create({ name, link, owner })
     .then((card) => {
       res.status(201).send(card);
@@ -49,7 +56,6 @@ const createCard = (req, res, next) => {
       }
     });
 };
-
 // Удаление карточки
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
