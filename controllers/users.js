@@ -19,7 +19,7 @@ const getUsers = (req, res, next) => {
 
 // возвращает данные пользователя
 const getUserInfo = (req, res, next) => {
-  const { _id } = req.user._id; // Используем _id напрямую из req.user
+  const { _id } = req.user; // Используем _id напрямую из req.user
 
   User.findById(_id)
     .orFail()
