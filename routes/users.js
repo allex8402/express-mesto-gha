@@ -20,13 +20,13 @@ const updateAvatarSchema = Joi.object({
 
 usersRouter.get('/', getUsers);
 
+usersRouter.get('/me', getUserInfo);
+
 usersRouter.get('/:userId', celebrate({
   [Segments.PARAMS]: Joi.object().keys({
     userId: Joi.string().hex().length(24).required(),
   }),
 }), getUserById);
-
-usersRouter.get('/me', getUserInfo);
 
 usersRouter.patch('/me', celebrate({
   [Segments.BODY]: updateProfileSchema,

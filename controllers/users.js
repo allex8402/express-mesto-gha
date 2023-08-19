@@ -11,14 +11,29 @@ const NotFoundError = require('../errors/NotFoundError');
 // const { ObjectId } = mongoose.Types;
 
 // Возвращает всех пользователей
-
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((err) => next(err));
 };
-// Возвращает пользователя по _id
 
+// возвращает данные пользователя
+const getUserInfo = (req, res, next) => {
+  const { _id } = req.user._id; // Используем _id напрямую из req.user
+
+  User.findById(_id)
+    .orFail()
+    .then((user) => res.status(200).send(user))
+    .catch((error) => {
+      if (error.name === 'NotFoundError') {
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+      } else {
+        next(error);
+      }
+    });
+};
+
+// Возвращает пользователя по _id
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
@@ -28,23 +43,6 @@ const getUserById = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные при получении пользователя'));
-      } else if (error.name === 'NotFoundError') {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
-      } else {
-        next(error);
-      }
-    });
-};
-
-const getUserInfo = (req, res, next) => {
-  const { _id } = req.user._id;
-
-  User.findById(_id)
-    .orFail()
-    .then((user) => res.status(200).send(user))
-    .catch((error) => {
-      if (error.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при получении данных'));
       } else if (error.name === 'NotFoundError') {
         next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
