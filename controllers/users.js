@@ -27,7 +27,7 @@ const getUserById = (req, res, next) => {
     .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
+        next(new ValidationError('Переданы некорректные данные при получении пользователя'));
       } else if (error.name === 'NotFoundError') {
         next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
@@ -37,17 +37,14 @@ const getUserById = (req, res, next) => {
 };
 
 const getUserInfo = (req, res, next) => {
-  User.findById(req.user._id)
+  const { _id } = req.user._id;
+
+  User.findById(_id)
     .orFail()
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
-      }
-      res.status(200).send(user);
-    })
+    .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при обновлении пользователя'));
+        next(new ValidationError('Переданы некорректные данные при получении данных'));
       } else if (error.name === 'NotFoundError') {
         next(new NotFoundError('Запрашиваемый пользователь не найден'));
       } else {
