@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const ValidationError = require('../errors/ValidationError');
-// const ConflictError = require('../errors/ConflictError');
+const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
@@ -63,20 +63,20 @@ const createUser = (req, res, next) => {
       User.create({
         name, about, avatar, email, password,
       })
-        .then((user) => res.send({
+        .then((user) => res.status(201).send({
           _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
         }))
         .catch((err) => {
-          if (err.name === 'MongoError' && err.code === 11000) {
-            res.status(409).send({ message: 'Данный email уже есть в базе.' });
-          }
           if (err.name === 'ValidationError') {
             throw new ValidationError('Переданы некорректные данные при создании пользователя.');
           }
+          if (err.name === 'MongoError' && err.code === 11000) {
+            next(new ConflictError('Данный email уже есть в базе.'));
+          }
           next(err);
-        })
-        .catch(next);
-    });
+        });
+    })
+    .catch(next);
 };
 
 // Oбновление профиля

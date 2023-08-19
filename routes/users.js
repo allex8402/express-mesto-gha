@@ -12,10 +12,7 @@ const updateProfileSchema = Joi.object({
   about: Joi.string().min(2).max(30).required(),
 });
 const updateAvatarSchema = Joi.object({
-  avatar: Joi.string()
-    .uri()
-    .error(new Error('Некорректный URL для аватара'))
-    .required(),
+  avatar: Joi.string().uri().required(),
 });
 
 usersRouter.get('/', getUsers);
