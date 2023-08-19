@@ -51,7 +51,7 @@ const deleteCard = (req, res, next) => {
 
       // Удаление карточки
       return Card.findByIdAndRemove(cardId)
-        .then(() => res.status(200).send(card))
+        .then(() => res.status(200).send({ message: 'Карточка удалена' }))
         .catch((error) => {
           if (error.name === 'CastError') {
             throw new NotFoundError('Запрашиваемый ресурс не найден');
