@@ -8,8 +8,6 @@ const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 
-// const { ObjectId } = mongoose.Types;
-
 // Возвращает всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
@@ -19,7 +17,7 @@ const getUsers = (req, res, next) => {
 
 // возвращает данные пользователя
 const getUserInfo = (req, res, next) => {
-  const { _id } = req.user; // Используем _id напрямую из req.user
+  const { _id } = req.user;
 
   User.findById(_id)
     .orFail()
@@ -97,6 +95,7 @@ const updateProfile = (req, res, next) => {
     });
 };
 
+// Обновление аватара
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
@@ -134,7 +133,7 @@ const login = (req, res, next) => {
           }
           const token = jwt.sign({ _id: user._id }, 'some-sekret-key', { expiresIn: '7d' });
 
-          res.status(200).send({ token }); // Здесь отправляем токен в теле ответа
+          res.status(200).send({ token }); // отправляем токен в теле ответа
         });
     })
     .catch(next);

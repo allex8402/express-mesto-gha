@@ -1,7 +1,5 @@
 const Card = require('../models/card');
-
 const ValidationError = require('../errors/ValidationError');
-
 const NotFoundError = require('../errors/NotFoundError');
 
 // Получение всех карточек
@@ -38,7 +36,6 @@ const createCard = (req, res, next) => {
 // Удаление карточки
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-
   // Поиск карточки
   Card.findById(cardId)
     .orFail(new NotFoundError('Карточки нет в БД'))
@@ -47,7 +44,6 @@ const deleteCard = (req, res, next) => {
       if (card.owner.toString() !== req.user._id.toString()) {
         return res.status(403).send({ message: 'Недостаточно прав для удаления чужой карточки' });
       }
-
       // Удаление карточки
       return Card.findByIdAndRemove(cardId)
         .then(() => res.status(200).send({ message: 'Карточка удалена' }))
