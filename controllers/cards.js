@@ -42,7 +42,7 @@ const deleteCard = (req, res, next) => {
 
   // Поиск карточки
   Card.findById(cardId)
-    .orFail(new NotFoundError('Карточка не найдена'))
+    .orFail()
     .then((card) => {
       // Проверка, принадлежит ли карточка текущему пользователю
       if (card.owner.toString() !== req.user._id.toString()) {
