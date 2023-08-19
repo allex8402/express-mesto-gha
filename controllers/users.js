@@ -54,29 +54,28 @@ const getUserById = (req, res, next) => {
 // Создаёт нового пользователя
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email,
+    name, about, avatar, email, password,
   } = req.body;
-
-  bcrypt.hash(req.body.password, 10)
-    .then((hash) => {
-      const password = hash;
-      User.create({
-        name, about, avatar, email, password,
-      })
-        .then((user) => res.status(201).send({
-          _id: user._id, name: user.name, about: user.about, avatar: user.avatar, email: user.email,
-        }))
-        .catch((err) => {
-          if (err.name === 'ValidationError') {
-            throw new ValidationError('Переданы некорректные данные при создании пользователя.');
-          }
-          if (err.name === 'MongoError' && err.code === 11000) {
-            next(new ConflictError('Данный email уже есть в базе.'));
-          }
-          next(err);
-        });
+  User.findOne({ email }) // Проверяем наличие пользователя с таким email
+    .then((existingUser) => {
+      if (existingUser) {
+        throw new ConflictError('Пользователь с таким email уже существует');
+      }
+      // Хешируем пароль и создаем пользователя
+      return bcrypt.hash(password, 10);
     })
-    .catch(next);
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => res.status(200).send({
+      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+    }))
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        throw new ValidationError('Переданы некорректные данные при создании пользователя');
+      }
+      next(error);
+    });
 };
 
 // Oбновление профиля

@@ -13,31 +13,10 @@ const getCards = (req, res, next) => {
 };
 
 // Создание карточки
-// const createCard = (req, res, next) => {
-//   const { name, link } = req.body;
-//   const owner = req.user._id;
-
-//   Card.create({ name, link, owner })
-//     .then((card) => {
-//       res.status(201).send(card);
-//     })
-//     .catch((error) => {
-//       if (error.name === 'ValidationError') {
-//         if (error.errors && error.errors.link) {
-//           res.status(400).send({ message: 'Некорректный URL' });
-//         } else {
-//           next(new ValidationError('Переданы некорректные данные'));
-//         }
-//       } else if (error.name === 'NotFoundError') {
-//         next(new NotFoundError('Запрашиваемый пользователь не найден'));
-//       } else {
-//         next(error);
-//       }
-//     });
-// };
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
+
   Card.create({ name, link, owner })
     .then((card) => {
       res.status(201).send(card);
@@ -56,6 +35,7 @@ const createCard = (req, res, next) => {
       }
     });
 };
+
 // Удаление карточки
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
