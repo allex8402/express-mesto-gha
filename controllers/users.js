@@ -107,7 +107,7 @@ const updateAvatar = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         if (error.errors && error.errors.avatar) {
-          res.status(400).send({ message: 'Некорректный URL для аватара' });
+          next(new ValidationError('Некорректный URL для аватара'));
         } else {
           next(new ValidationError('Переданы некорректные данные при обновлении аватара'));
         }

@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
-
+const AccessDeniedError = require('../errors/AccessDeniedError');
 // Получение всех карточек
 const getCards = (req, res, next) => {
   Card.find({})
@@ -21,7 +21,7 @@ const createCard = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         if (error.errors && error.errors.link) {
-          res.status(400).send({ message: 'Некорректный URL' });
+          next(new ValidationError('Некорректный URL'));
         } else {
           next(new ValidationError('Переданы некорректные данные'));
         }
@@ -42,7 +42,7 @@ const deleteCard = (req, res, next) => {
     .then((card) => {
       // Проверка, принадлежит ли карточка текущему пользователю
       if (card.owner.toString() !== req.user._id.toString()) {
-        return res.status(403).send({ message: 'Недостаточно прав для удаления чужой карточки' });
+        return next(new AccessDeniedError('Недостаточно прав для удаления чужой карточки'));
       }
       // Удаление карточки
       return Card.findByIdAndRemove(cardId)
@@ -69,7 +69,7 @@ const likeCard = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректный формат ID карточки' });
+        next(new ValidationError('Переданы некорректные данные'));
       } else if (error.name === 'CastError') {
         next(new NotFoundError('Запрашиваемый ресурс не найден'));
       } else {
@@ -90,7 +90,7 @@ const dislikeCard = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректный формат ID карточки' });
+        next(new ValidationError('Переданы некорректные данные'));
       } else if (error.name === 'CastError') {
         next(new NotFoundError('Запрашиваемый ресурс не найден'));
       } else {
