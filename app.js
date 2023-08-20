@@ -2,8 +2,7 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
-const { celebrate, errors } = require('celebrate');
-const { Joi } = require('joi');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 const { login, createUser } = require('./controllers/users');
