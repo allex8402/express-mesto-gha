@@ -13,7 +13,7 @@ const updateProfileSchema = Joi.object({
   about: Joi.string().min(2).max(30).required(),
 });
 const updateAvatarSchema = Joi.object({
-  avatar: Joi.string().pattern(urlRegex),
+  avatar: Joi.string().pattern({ urlRegex }),
 });
 
 usersRouter.get('/', getUsers);

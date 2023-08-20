@@ -50,18 +50,38 @@ const getUserById = (req, res, next) => {
 };
 
 // Создаёт нового пользователя
+// const createUser = (req, res, next) => {
+//   const {
+//     name, about, avatar, email, password,
+//   } = req.body;
+//   User.findOne({ email }) // Проверяем наличие пользователя с таким email
+//     .then((existingUser) => {
+//       if (existingUser) {
+//         throw new ConflictError('Пользователь с таким email уже существует');
+//       }
+//       // Хешируем пароль и создаем пользователя
+//       return bcrypt.hash(password, 10);
+//     })
+//     .then((hash) => User.create({
+//       name, about, avatar, email, password: hash,
+//     }))
+//     .then((user) => res.status(200).send({
+//       _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+//     }))
+//     .catch((error) => {
+//       if (error.name === 'ValidationError') {
+//         throw new ValidationError('Переданы некорректные данные при создании пользователя');
+//       }
+//       next(error);
+//     });
+// };
 const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  User.findOne({ email }) // Проверяем наличие пользователя с таким email
-    .then((existingUser) => {
-      if (existingUser) {
-        throw new ConflictError('Пользователь с таким email уже существует');
-      }
-      // Хешируем пароль и создаем пользователя
-      return bcrypt.hash(password, 10);
-    })
+
+  // Хешируем пароль и создаем пользователя
+  bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
@@ -71,11 +91,14 @@ const createUser = (req, res, next) => {
     .catch((error) => {
       if (error.name === 'ValidationError') {
         throw new ValidationError('Переданы некорректные данные при создании пользователя');
+      } else if (error.name === 'MongoError' && error.code === 11000) {
+        // Обработка ошибки дубликата (код 11000)
+        throw new ConflictError('Пользователь с таким email уже существует');
+      } else {
+        next(error);
       }
-      next(error);
     });
 };
-
 // Oбновление профиля
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
