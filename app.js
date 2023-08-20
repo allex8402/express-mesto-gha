@@ -9,7 +9,7 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error-handler');
 const NotFoundError = require('./errors/NotFoundError');
-const { urlRegex } = require('./utils/regex');
+const urlRegex = require('./utils/regex');
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern({ urlRegex }),
+    avatar: Joi.string().pattern(urlRegex),
   }),
 }), createUser);
 

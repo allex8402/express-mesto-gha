@@ -4,7 +4,7 @@ const { celebrate, Joi, Segments } = require('celebrate');
 const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/cards');
-const { urlRegex } = require('../utils/regex');
+const urlRegex = require('../utils/regex');
 
 const cardsRouter = express.Router();
 
@@ -12,7 +12,7 @@ const cardIdSchema = Joi.string().hex().length(24).required();
 
 const cardSchema = {
   name: Joi.string().min(2).max(30).required(),
-  link: Joi.string().pattern({ urlRegex }).required(),
+  link: Joi.string().pattern(urlRegex).required(),
 };
 
 cardsRouter.get('/', getCards);

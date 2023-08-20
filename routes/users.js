@@ -4,7 +4,7 @@ const { celebrate, Joi, Segments } = require('celebrate');
 const {
   getUsers, getUserById, updateProfile, updateAvatar, getUserInfo,
 } = require('../controllers/users');
-const { urlRegex } = require('../utils/regex');
+const urlRegex = require('../utils/regex');
 
 const usersRouter = express.Router();
 
@@ -13,7 +13,7 @@ const updateProfileSchema = Joi.object({
   about: Joi.string().min(2).max(30).required(),
 });
 const updateAvatarSchema = Joi.object({
-  avatar: Joi.string().pattern({ urlRegex }),
+  avatar: Joi.string().pattern(urlRegex),
 });
 
 usersRouter.get('/', getUsers);
