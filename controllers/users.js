@@ -55,7 +55,6 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
   // Хешируем пароль и создаем пользователя
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -68,7 +67,6 @@ const createUser = (req, res, next) => {
       if (error.name === 'ValidationError') {
         throw new ValidationError('Переданы некорректные данные при создании пользователя');
       } else if (error.name === 'MongoError' && error.code === 11000) {
-        // Обработка ошибки дубликата (код 11000)
         throw new ConflictError('Пользователь с таким email уже существует');
       } else {
         next(error);
