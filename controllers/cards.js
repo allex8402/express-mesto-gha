@@ -2,6 +2,7 @@ const Card = require('../models/card');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const AccessDeniedError = require('../errors/AccessDeniedError');
+
 // Получение всех карточек
 const getCards = (req, res, next) => {
   Card.find({})
@@ -34,28 +35,6 @@ const createCard = (req, res, next) => {
 };
 
 // Удаление карточки
-// const deleteCard = (req, res, next) => {
-//   const { cardId } = req.params;
-//   // Поиск карточки
-//   Card.findById(cardId)
-//     .orFail(new NotFoundError('Карточки нет в БД'))
-//     .then((card) => {
-//       // Проверка, принадлежит ли карточка текущему пользователю
-//       if (card.owner.toString() !== req.user._id.toString()) {
-//         return next(new AccessDeniedError('Недостаточно прав для удаления чужой карточки'));
-//       }
-//       // Удаление карточки
-//       return Card.findByIdAndRemove(cardId)
-//         .then(() => res.status(200).send({ message: 'Карточка удалена' }))
-//         .catch((error) => {
-//           if (error.name === 'CastError') {
-//             throw new NotFoundError('Запрашиваемый ресурс не найден');
-//           }
-//           next(error);
-//         });
-//     })
-//     .catch(next);
-// };
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   // Поиск карточки
@@ -78,6 +57,7 @@ const deleteCard = (req, res, next) => {
     })
     .catch(next);
 };
+
 // Поставить лайк
 const likeCard = (req, res, next) => {
   const { cardId } = req.params;
