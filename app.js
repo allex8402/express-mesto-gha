@@ -2,11 +2,14 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
-const { celebrate, Joi, errors } = require('celebrate');
+const { celebrate, errors } = require('celebrate');
+const { Joi } = require('joi');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/error-handler');
+const NotFoundError = require('./errors/NotFoundError');
 
 const app = express();
 
@@ -44,18 +47,14 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Запрашиваемый ресурс не найден' });
+app.use('*', (req, res, next) => {
+  const error = new NotFoundError('Запрашиваемый ресурс не найден');
+  next(error);
 });
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-
-  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
-  next();
-});
+app.use(errorHandler);
 
 // Запускаем сервер на заданном порту
 app.listen(PORT, () => {
