@@ -56,8 +56,6 @@ const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  console.log('Before User.create');
-
   // Хешируем пароль и создаем пользователя
   bcrypt.hash(password, 10)
     .then((hash) => {
@@ -67,14 +65,11 @@ const createUser = (req, res, next) => {
       });
     })
     .then((user) => {
-      console.log('User created:', user);
       res.status(200).send({
         _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
       });
     })
     .catch((error) => {
-      console.log('Error:', error);
-
       if (error.name === 'MongoServerError' && error.code === 11000) {
         const conflictError = new ConflictError('Пользователь с таким email уже существует');
         next(conflictError); // Вот здесь передаём экземпляр ConflictError
