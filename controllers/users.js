@@ -55,19 +55,31 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
+  console.log('Before User.create');
+
   // Хешируем пароль и создаем пользователя
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
-    }))
-    .then((user) => res.status(200).send({
-      _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
-    }))
+    .then((hash) => {
+      console.log('Hash generated:', hash);
+      return User.create({
+        name, about, avatar, email, password: hash,
+      });
+    })
+    .then((user) => {
+      console.log('User created:', user);
+      res.status(200).send({
+        _id: user._id, name: user.name, about: user.about, avatar: user.avatar,
+      });
+    })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        throw new ValidationError('Переданы некорректные данные при создании пользователя');
-      } else if (error.name === 'MongoError' && error.code === 11000) {
-        throw new ConflictError('Пользователь с таким email уже существует');
+      console.log('Error:', error);
+
+      if (error.name === 'MongoServerError' && error.code === 11000) {
+        const conflictError = new ConflictError('Пользователь с таким email уже существует');
+        next(conflictError); // Вот здесь передаём экземпляр ConflictError
+      } else if (error.name === 'ValidationError') {
+        next(new ValidationError('Переданы некорректные данные при создании пользователя'));
       } else {
         next(error);
       }
