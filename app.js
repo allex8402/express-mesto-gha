@@ -10,6 +10,7 @@ const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/error-handler');
 const NotFoundError = require('./errors/NotFoundError');
 const urlRegex = require('./utils/regex');
+const corsMiddleware = require('./middlewares/cors'); // Подключаем мидлвару для обработки CORS
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('*', (req, res, next) => {
 app.use(errors());
 
 app.use(errorHandler);
+app.use(corsMiddleware);
 
 // Запускаем сервер на заданном порту
 app.listen(PORT, () => {
