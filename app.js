@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 const { login, createUser } = require('./controllers/users');
@@ -43,6 +44,7 @@ app.post('/signin', celebrate({
 }), login);
 
 app.use(auth);
+app.use(requestLogger);// Подключаем логгер запросов
 // Подключаем маршруты для пользователей и карточек
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
@@ -51,7 +53,7 @@ app.use('*', (req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');
   next(error);
 });
-
+app.use(errorLogger); // Подключаем логгер ошибок после обработчиков роутов и до обработчиков ошибок
 app.use(errors());
 
 app.use(errorHandler);
