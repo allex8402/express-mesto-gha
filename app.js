@@ -26,6 +26,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'build')));
 
+app.use(requestLogger); // Подключаем логгер запросов
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
@@ -44,17 +52,18 @@ app.post('/signin', celebrate({
 }), login);
 
 app.use(auth);
-app.use(requestLogger);// Подключаем логгер запросов
+
 // Подключаем маршруты для пользователей и карточек
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use(errorLogger); // Подключаем логгер ошибок после обработчиков роутов и до обработчиков ошибок
+app.use(errors());
 
 app.use('*', (req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');
   next(error);
 });
-app.use(errorLogger); // Подключаем логгер ошибок после обработчиков роутов и до обработчиков ошибок
-app.use(errors());
 
 app.use(errorHandler);
 app.use(corsMiddleware);
